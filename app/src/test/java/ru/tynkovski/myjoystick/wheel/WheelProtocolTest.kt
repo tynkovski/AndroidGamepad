@@ -6,10 +6,6 @@ import org.junit.Test
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-/**
- * Locks the protocol v2 wire format shared with the Linux daemon. If any of these fail the daemon
- * will silently drop packets (bad magic) or drive the wrong axis.
- */
 class WheelProtocolTest {
 
     @Test

@@ -84,8 +84,6 @@ android {
     }
 }
 
-// Human readable artifact names: MyJoystick-1.0-release.apk instead of app-release.apk.
-// AGP 9 removed the legacy `applicationVariants` API, so the modern variant API is used here.
 androidComponents {
     onVariants(selector().all()) { variant ->
         variant.outputs.forEach { output ->

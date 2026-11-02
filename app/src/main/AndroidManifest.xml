@@ -1,30 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- UDP stream to the PC daemon -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!--
-        Local Network Access. From targetSdk 37 (Android 17) the local network is blocked by
-        default: sending a UDP datagram to a LAN address such as 192.168.x.x fails with
-        EPERM unless this runtime permission is granted. It belongs to the NEARBY_DEVICES
-        permission group, so it is pre-granted when another permission of that group
-        (for example Bluetooth) is already allowed.
-    -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
-
-    <!-- Streaming must survive the screen turning off -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!--
-        Runtime prerequisite for the connectedDevice foreground service type (Android 14+).
-        Without one of the CHANGE_* / BLUETOOTH_* permissions in the manifest,
-        startForeground() throws SecurityException.
-    -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application

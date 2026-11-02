@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">My Joystick</string>
 
-    <!-- Control screen -->
     <string name="control_settings">Настройки</string>
     <string name="pedal_gas">GAS</string>
     <string name="pedal_brake">BRAKE</string>
@@ -10,7 +9,6 @@
     <string name="control_mode_tilt_recenter_symbol" translatable="false">⌖</string>
     <string name="steering_state">Руль %1$d%%</string>
 
-    <!-- One-shot command buttons -->
     <string name="event_shift_up_symbol" translatable="false">↑</string>
     <string name="event_shift_down_symbol" translatable="false">↓</string>
     <string name="event_neutral_symbol" translatable="false">N</string>
@@ -20,14 +18,12 @@
     <string name="event_neutral">Нейтраль</string>
     <string name="event_handbrake">Ручной тормоз</string>
 
-    <!-- Gear pad -->
     <string name="gear_pad_up_symbol" translatable="false">+</string>
     <string name="gear_pad_down_symbol" translatable="false">−</string>
     <string name="gear_pad_reserved_symbol" translatable="false">*</string>
     <string name="gear_pad_description">Переключение передач: свайп вверх — выше, вниз — ниже, влево — нейтраль, вправо — зарезервировано</string>
     <string name="gear_pad_description_inverted">Переключение передач: свайп вниз — выше, вверх — ниже, влево — нейтраль, вправо — зарезервировано</string>
 
-    <!-- Settings screen -->
     <string name="settings_title">Настройки</string>
     <string name="settings_back">Назад</string>
     <string name="settings_save">Сохранить</string>
@@ -56,17 +52,14 @@
     <string name="settings_release_ramp">Отпускание, мс</string>
     <string name="settings_brake_axis_inverted">Развернуть ось тормоза на 180°</string>
 
-    <!-- Connection status -->
     <string name="status_disconnected">Отключено</string>
     <string name="status_streaming">Отправка на %1$s</string>
 
-    <!-- Foreground service notification -->
     <string name="channel_name">Поток управления</string>
     <string name="channel_description">Передача осей управления на ПК</string>
     <string name="notification_waiting">Ожидание настроек…</string>
     <string name="notification_stop">Остановить</string>
 
-    <!-- Errors -->
     <string name="error_no_ip">Укажите IP-адрес ПК</string>
     <string name="error_send_failed">Ошибка отправки UDP</string>
     <string name="error_local_network">Нет доступа к локальной сети. Разрешите «Устройства рядом» в настройках приложения.</string>
