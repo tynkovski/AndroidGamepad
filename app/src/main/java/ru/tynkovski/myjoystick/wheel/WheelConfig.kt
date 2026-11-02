@@ -20,6 +20,7 @@ data class WheelSettings(
     val brakeAxisInverted: Boolean = false,
     val tiltSensitivity: Float = DEFAULT_TILT_SENSITIVITY,
     val axisWidthFraction: Float = DEFAULT_AXIS_WIDTH_FRACTION,
+    val pedalLengthFraction: Float = DEFAULT_PEDAL_LENGTH_FRACTION,
 ) {
     val target: String get() = "$ip:$port"
 
@@ -59,6 +60,18 @@ data class WheelSettings(
             return (MIN_AXIS_WIDTH_FRACTION + steps * AXIS_WIDTH_STEP)
                 .coerceIn(MIN_AXIS_WIDTH_FRACTION, MAX_AXIS_WIDTH_FRACTION)
         }
+
+        const val DEFAULT_PEDAL_LENGTH_FRACTION = 1f
+        const val MIN_PEDAL_LENGTH_FRACTION = 0.35f
+        const val MAX_PEDAL_LENGTH_FRACTION = 1f
+        const val PEDAL_LENGTH_STEP = 0.01f
+
+        fun snapPedalLength(value: Float): Float {
+            val steps = ((value.coerceIn(MIN_PEDAL_LENGTH_FRACTION, MAX_PEDAL_LENGTH_FRACTION) -
+                MIN_PEDAL_LENGTH_FRACTION) / PEDAL_LENGTH_STEP).roundToInt()
+            return (MIN_PEDAL_LENGTH_FRACTION + steps * PEDAL_LENGTH_STEP)
+                .coerceIn(MIN_PEDAL_LENGTH_FRACTION, MAX_PEDAL_LENGTH_FRACTION)
+        }
     }
 }
 
@@ -90,6 +103,7 @@ object WheelConfig {
             putBoolean(KEY_BRAKE_INVERTED, settings.brakeAxisInverted)
             putFloat(KEY_TILT_SENSITIVITY, settings.tiltSensitivity)
             putFloat(KEY_AXIS_WIDTH, settings.axisWidthFraction)
+            putFloat(KEY_PEDAL_LENGTH, settings.pedalLengthFraction)
         }
         _settings.value = settings
     }
@@ -125,6 +139,12 @@ object WheelConfig {
             WheelSettings.MIN_AXIS_WIDTH_FRACTION,
             WheelSettings.MAX_AXIS_WIDTH_FRACTION,
         ),
+        pedalLengthFraction = WheelSettings.snapPedalLength(
+            prefs.getFloat(
+                KEY_PEDAL_LENGTH,
+                WheelSettings.DEFAULT_PEDAL_LENGTH_FRACTION,
+            ),
+        ),
     )
 
     private const val PREFS_NAME = "wheel"
@@ -138,4 +158,5 @@ object WheelConfig {
     private const val KEY_BRAKE_INVERTED = "brake_axis_inverted"
     private const val KEY_TILT_SENSITIVITY = "tilt_sensitivity"
     private const val KEY_AXIS_WIDTH = "axis_width_fraction"
+    private const val KEY_PEDAL_LENGTH = "pedal_length_fraction"
 }

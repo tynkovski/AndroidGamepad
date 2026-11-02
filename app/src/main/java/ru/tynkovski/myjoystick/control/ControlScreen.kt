@@ -76,6 +76,7 @@ fun ControlScreen(
     modifier: Modifier = Modifier,
     controlMode: ControlMode = ControlMode.WHEEL,
     axisWidthFraction: Float = STRIP_WIDTH_FRACTION,
+    pedalLengthFraction: Float = 1f,
     onRecenterTilt: () -> Unit = {},
 ) {
     BoxWithConstraints(
@@ -85,7 +86,7 @@ fun ControlScreen(
             .displayCutoutPadding(),
     ) {
         val stripWidth = maxWidth * axisWidthFraction
-        val stripHeight = maxHeight - (ScreenEdge * 2)
+        val stripHeight = (maxHeight - (ScreenEdge * 2)) * pedalLengthFraction
 
         when (controlMode) {
             ControlMode.TILT -> TiltLayout(
@@ -145,6 +146,7 @@ private fun BoxWithConstraintsScope.WheelLayout(
             .align(Alignment.BottomEnd)
             .padding(ScreenEdge),
         horizontalArrangement = Arrangement.spacedBy(GearPadGap),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.fillMaxHeight()) {
             GearPadControl(
@@ -299,7 +301,7 @@ private fun PedalPair(
     Row(
         modifier = Modifier.rotate(PEDAL_TILT_DEGREES),
         horizontalArrangement = Arrangement.spacedBy(PedalGap),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Bottom,
     ) {
         PedalControl(
             label = stringResource(R.string.pedal_brake),

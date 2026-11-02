@@ -77,6 +77,7 @@ fun SettingsScreen(
     var brakeInverted by remember(initial) { mutableStateOf(initial.brakeAxisInverted) }
     var tiltSensitivity by remember(initial) { mutableFloatStateOf(initial.tiltSensitivity) }
     var axisWidth by remember(initial) { mutableFloatStateOf(initial.axisWidthFraction) }
+    var pedalLength by remember(initial) { mutableFloatStateOf(initial.pedalLengthFraction) }
 
     fun formSettings(): WheelSettings = WheelSettings(
         ip = ip,
@@ -97,6 +98,7 @@ fun SettingsScreen(
         brakeAxisInverted = brakeInverted,
         tiltSensitivity = WheelSettings.snapTiltSensitivity(tiltSensitivity),
         axisWidthFraction = WheelSettings.snapAxisWidth(axisWidth),
+        pedalLengthFraction = WheelSettings.snapPedalLength(pedalLength),
     )
 
     Column(
@@ -211,6 +213,11 @@ fun SettingsScreen(
         AxisWidthSection(
             axisWidth = axisWidth,
             onAxisWidthChange = { value -> axisWidth = value },
+        )
+
+        PedalLengthSection(
+            pedalLength = pedalLength,
+            onPedalLengthChange = { value -> pedalLength = value },
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -465,6 +472,71 @@ private fun AxisWidthSection(
 private fun axisWidthSteps(): Int {
     val range = WheelSettings.MAX_AXIS_WIDTH_FRACTION - WheelSettings.MIN_AXIS_WIDTH_FRACTION
     return (range / WheelSettings.AXIS_WIDTH_STEP).roundToInt() - 1
+}
+
+@Composable
+private fun PedalLengthSection(
+    pedalLength: Float,
+    onPedalLengthChange: (Float) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.settings_pedal_length),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = stringResource(
+                R.string.settings_pedal_length_value,
+                (WheelSettings.snapPedalLength(pedalLength) * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+
+    Slider(
+        value = WheelSettings.snapPedalLength(pedalLength),
+        onValueChange = { value ->
+            onPedalLengthChange(WheelSettings.snapPedalLength(value))
+        },
+        valueRange = WheelSettings.MIN_PEDAL_LENGTH_FRACTION..WheelSettings.MAX_PEDAL_LENGTH_FRACTION,
+        steps = pedalLengthSteps(),
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(
+                R.string.settings_pedal_length_value,
+                (WheelSettings.MIN_PEDAL_LENGTH_FRACTION * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray,
+        )
+        Text(
+            text = stringResource(
+                R.string.settings_pedal_length_value,
+                (WheelSettings.MAX_PEDAL_LENGTH_FRACTION * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray,
+        )
+    }
+}
+
+private fun pedalLengthSteps(): Int {
+    val range = WheelSettings.MAX_PEDAL_LENGTH_FRACTION -
+        WheelSettings.MIN_PEDAL_LENGTH_FRACTION
+    return (range / WheelSettings.PEDAL_LENGTH_STEP).roundToInt() - 1
 }
 
 @Composable

@@ -123,6 +123,7 @@ class MainActivity : ComponentActivity() {
                         onOpenSettings = { showSettings = true },
                         controlMode = settings.controlMode,
                         axisWidthFraction = settings.axisWidthFraction,
+                        pedalLengthFraction = settings.pedalLengthFraction,
                         onRecenterTilt = {
                             tiltController.recenter()
                             controlState.setWheelAngle(0f, settings.lockToLockDegrees)
