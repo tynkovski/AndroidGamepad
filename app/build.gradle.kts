@@ -20,9 +20,18 @@ val hasReleaseSigning = storeFilePath != null &&
     signingValue("RELEASE_KEY_ALIAS") != null &&
     signingValue("RELEASE_KEY_PASSWORD") != null
 
-/** Artifact base name, e.g. `MyJoystick-1.0-release.apk`. */
 val appArtifactName = "MyJoystick"
-val appVersionName = "1.0"
+
+val appVersionName: String = libs.versions.appVersion.get()
+val appVersionCode: Int = appVersionName
+    .split('.')
+    .let { parts ->
+        require(parts.size == 2) { "appVersion must be MAJOR.MINOR, was '$appVersionName'" }
+        val major = parts[0].toInt()
+        val minor = parts[1].toInt()
+        require(minor in 0..99) { "appVersion minor must be 0..99, was '$appVersionName'" }
+        major * 100 + minor
+    }
 
 android {
     namespace = "ru.tynkovski.myjoystick"
@@ -34,7 +43,7 @@ android {
         applicationId = "ru.tynkovski.myjoystick"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
+        versionCode = appVersionCode
         versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
