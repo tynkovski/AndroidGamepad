@@ -5,11 +5,9 @@ The phone streams axis state over UDP to a PC at 100 Hz, where it is received by
 [daemon](https://github.com/tynkovski/androidjoystick-daemon) that creates a virtual gamepad through `/dev/uinput`.
 To BeamNG.drive on Linux it looks like an ordinary controller — no Bluetooth, drivers or kernel modules.
 
-Steering works either with a **finger on an on-screen wheel** or with the **phone's tilt sensors**.
-
-| Wheel mode | Tilt mode |
-|:---:|:---:|
-| ![Control screen, wheel mode](docs/screenshots/control-wheel.png) | ![Control screen, tilt mode](docs/screenshots/control-tilt.png) |
+- **Two steering modes** — a finger on the on-screen wheel, or the phone's tilt sensors.
+- **Screen off, still driving** — sending runs inside a foreground service.
+- **Plain UDP** — a 24-byte packet per frame, nothing to pair or install on the phone side.
 
 ## How it works
 
@@ -45,7 +43,12 @@ If the PC stops receiving packets, the daemon zeroes all axes after 0.3 s.
 
 ## Control screen
 
+The main screen is a full-screen, landscape controller. Its layout follows the selected control mode,
+so both hands stay on the device.
+
 ### Wheel mode
+
+![Control screen — wheel mode](docs/screenshots/control-wheel.png)
 
 - **Steering wheel** — rotates with a finger along the rim, limited by the "lock to lock" setting.
 - **Pedals** — vertical `BRAKE` and `GAS` strips on the right; pressure depends on the touch point,
@@ -55,6 +58,8 @@ If the PC stops receiving packets, the daemon zeroes all axes after 0.3 s.
 - **⚙** — opens settings.
 
 ### Tilt mode
+
+![Control screen — tilt mode](docs/screenshots/control-tilt.png)
 
 The phone itself becomes the wheel; the layout is mirrored so both hands hold the device in landscape.
 
@@ -82,25 +87,35 @@ The accelerometer is re-weighted smoothly when the phone is tilted again, so the
 
 ## Settings
 
-### Connection and mode
+Reached with **⚙** from the control screen. Settings are grouped by what they affect: the link to the PC,
+the steering mode and the pedals.
 
-![Settings, connection and mode](docs/screenshots/settings.png)
+### Connection
+
+![Settings — connection](docs/screenshots/settings.png)
 
 | Parameter | Default | Description |
 |---|---|---|
 | PC IP address | — | the computer's address on the local network |
 | UDP port | `5555` | control stream port |
 | Command port | `5556` | one-shot command port |
-| Control mode | Wheel | `Wheel` (finger) or `Tilt` (sensors) |
-| Lock to lock angle | `960°` | wheel mode, options: 960, 720, 360, 305, 270 |
-| Tilt sensitivity | `100%` | tilt mode, `50 … 100%` |
 
 The status card shows whether streaming is active, which address it targets and how many packets were sent.
 If the port or address is invalid, default values are substituted.
 
+### Control mode
+
+![Settings — tilt mode](docs/screenshots/settings-tilt.png)
+
+| Parameter | Default | Description |
+|---|---|---|
+| Control mode | Wheel | `Wheel` (finger) or `Tilt` (sensors) |
+| Lock to lock angle | `960°` | wheel mode, options: 960, 720, 360, 305, 270 |
+| Tilt sensitivity | `100%` | tilt mode, `50 … 100%` |
+
 ### Pedals and axis
 
-![Settings, pedals and axis](docs/screenshots/settings-pedals.png)
+![Settings — pedals and axis](docs/screenshots/settings-pedals.png)
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -169,30 +184,6 @@ and bind the axes in **Options → Controls**.
 Released under the **MIT License** — you are free to use, modify and redistribute this project,
 including commercially, as long as the copyright notice and permission notice are retained.
 See [LICENSE](LICENSE) for the full text.
-
-```
-MIT License
-
-Copyright (c) 2026 tynkovski
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
 
 ---
 
