@@ -24,6 +24,7 @@
     <string name="gear_pad_down_symbol" translatable="false">−</string>
     <string name="gear_pad_reserved_symbol" translatable="false">*</string>
     <string name="gear_pad_description">Переключение передач: свайп вверх — выше, вниз — ниже, влево — нейтраль, вправо — зарезервировано</string>
+    <string name="gear_pad_description_inverted">Переключение передач: свайп вниз — выше, вверх — ниже, влево — нейтраль, вправо — зарезервировано</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Настройки</string>

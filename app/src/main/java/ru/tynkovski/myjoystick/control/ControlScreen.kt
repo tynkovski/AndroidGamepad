@@ -148,6 +148,7 @@ private fun BoxWithConstraintsScope.WheelLayout(
             GearPadControl(
                 enabled = eventsEnabled,
                 onEvent = onEvent,
+                inverted = brakeAxisInverted,
                 modifier = Modifier.align(Alignment.Center),
             )
             EventButtons(
@@ -191,32 +192,53 @@ private fun BoxWithConstraintsScope.TiltLayout(
 ) {
     val steeringHalfTravel = (lockToLockDegrees.coerceAtLeast(2) / 2).toFloat()
 
-    PedalControl(
-        label = stringResource(R.string.pedal_brake),
-        pressRampMs = pressRampMs,
-        releaseRampMs = releaseRampMs,
-        fillColor = BrakeColor,
-        onValueChange = state::updateBrake,
-        inverted = brakeAxisInverted,
+    Row(
         modifier = Modifier
             .align(Alignment.CenterStart)
-            .padding(start = ScreenEdge)
-            .width(stripWidth)
-            .height(stripHeight),
-    )
+            .padding(start = ScreenEdge),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(ButtonsPedalGap),
+    ) {
+        PedalControl(
+            label = stringResource(R.string.pedal_brake),
+            pressRampMs = pressRampMs,
+            releaseRampMs = releaseRampMs,
+            fillColor = BrakeColor,
+            onValueChange = state::updateBrake,
+            inverted = brakeAxisInverted,
+            modifier = Modifier
+                .width(stripWidth)
+                .height(stripHeight),
+        )
+        GearPadControl(
+            enabled = eventsEnabled,
+            onEvent = onEvent,
+        )
+    }
 
-    PedalControl(
-        label = stringResource(R.string.pedal_gas),
-        pressRampMs = pressRampMs,
-        releaseRampMs = releaseRampMs,
-        fillColor = GasColor,
-        onValueChange = state::updateThrottle,
+    Row(
         modifier = Modifier
             .align(Alignment.CenterEnd)
-            .padding(end = ScreenEdge)
-            .width(stripWidth)
-            .height(stripHeight),
-    )
+            .padding(end = ScreenEdge),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(ButtonsPedalGap),
+    ) {
+        GearPadControl(
+            enabled = eventsEnabled,
+            onEvent = onEvent,
+            inverted = brakeAxisInverted,
+        )
+        PedalControl(
+            label = stringResource(R.string.pedal_gas),
+            pressRampMs = pressRampMs,
+            releaseRampMs = releaseRampMs,
+            fillColor = GasColor,
+            onValueChange = state::updateThrottle,
+            modifier = Modifier
+                .width(stripWidth)
+                .height(stripHeight),
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -244,9 +266,6 @@ private fun BoxWithConstraintsScope.TiltLayout(
                 }
             }
 
-            Spacer(Modifier.weight(1f))
-
-            GearPadControl(enabled = eventsEnabled, onEvent = onEvent)
             Spacer(Modifier.weight(1f))
 
             EventButtons(enabled = eventsEnabled, onEvent = onEvent)

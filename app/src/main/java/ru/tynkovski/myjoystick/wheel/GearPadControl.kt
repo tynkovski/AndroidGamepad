@@ -27,6 +27,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -35,7 +37,9 @@ import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.time.Duration.Companion.milliseconds
 
-private val PadSize = 132.dp
+private val PadSize = 156.dp
+
+private const val LabelFontRatio = 22f / 132f
 
 private val PadCorner = 16.dp
 
@@ -54,11 +58,11 @@ private val LabelDisabled = Color(0x26FFFFFF)
 
 private val LabelReserved = Color(0x24FFFFFF)
 
-private enum class GearDirection(val event: WheelEvent?) {
-    Up(WheelEvent.ShiftUp),
-    Down(WheelEvent.ShiftDown),
-    Left(WheelEvent.Neutral),
-    Right(null),
+private enum class GearSlot(val event: WheelEvent?) {
+    ShiftUp(WheelEvent.ShiftUp),
+    ShiftDown(WheelEvent.ShiftDown),
+    Neutral(WheelEvent.Neutral),
+    Reserved(null),
 }
 
 @Composable
@@ -66,12 +70,17 @@ fun GearPadControl(
     enabled: Boolean,
     onEvent: (WheelEvent) -> Unit,
     modifier: Modifier = Modifier,
+    inverted: Boolean = false,
+    size: Dp = PadSize,
 ) {
     val thresholdPx = with(LocalDensity.current) { SwipeThreshold.toPx() }
     val currentOnEvent by rememberUpdatedState(onEvent)
-    val description = stringResource(R.string.gear_pad_description)
+    val description = stringResource(
+        if (inverted) R.string.gear_pad_description_inverted else R.string.gear_pad_description,
+    )
+    val labelFontSize = (size.value * LabelFontRatio).sp
 
-    var flash by remember { mutableStateOf<GearDirection?>(null) }
+    var flash by remember { mutableStateOf<GearSlot?>(null) }
 
     LaunchedEffect(flash) {
         if (flash != null) {
@@ -83,15 +92,15 @@ fun GearPadControl(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(PadSize)
+            .size(size)
             .clip(RoundedCornerShape(PadCorner))
             .background(if (enabled) PadIdle else PadDisabled, RoundedCornerShape(PadCorner))
             .then(
                 if (enabled) {
-                    Modifier.pointerInput(thresholdPx) {
+                    Modifier.pointerInput(thresholdPx, inverted) {
                         var dx = 0f
                         var dy = 0f
-                        var fired = emptySet<GearDirection>()
+                        var fired = emptySet<GearSlot>()
 
                         detectDragGestures(
                             onDragStart = {
@@ -110,16 +119,16 @@ fun GearPadControl(
                                 dy += dragAmount.y
 
                                 while (hypot(dx, dy) >= thresholdPx) {
-                                    val direction = directionOf(dx, dy)
-                                    if (direction in fired) break
+                                    val slot = slotOf(dx, dy, inverted)
+                                    if (slot in fired) break
 
                                     val scale = thresholdPx / hypot(dx, dy)
                                     dx -= dx * scale
                                     dy -= dy * scale
 
-                                    direction.event?.let { event ->
-                                        fired = fired + direction
-                                        flash = direction
+                                    fired = fired + slot
+                                    slot.event?.let { event ->
+                                        flash = slot
                                         currentOnEvent(event)
                                     }
                                 }
@@ -139,24 +148,27 @@ fun GearPadControl(
     ) {
         GearLabel(
             symbol = stringResource(R.string.gear_pad_up_symbol),
-            active = flash == GearDirection.Up,
+            active = flash == GearSlot.ShiftUp,
             enabled = enabled,
+            fontSize = labelFontSize,
             modifier = Modifier
-                .align(Alignment.TopCenter)
+                .align(if (inverted) Alignment.BottomCenter else Alignment.TopCenter)
                 .padding(LabelInset),
         )
         GearLabel(
             symbol = stringResource(R.string.gear_pad_down_symbol),
-            active = flash == GearDirection.Down,
+            active = flash == GearSlot.ShiftDown,
             enabled = enabled,
+            fontSize = labelFontSize,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(if (inverted) Alignment.TopCenter else Alignment.BottomCenter)
                 .padding(LabelInset),
         )
         GearLabel(
             symbol = stringResource(R.string.event_neutral_symbol),
-            active = flash == GearDirection.Left,
+            active = flash == GearSlot.Neutral,
             enabled = enabled,
+            fontSize = labelFontSize,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(LabelInset),
@@ -166,6 +178,7 @@ fun GearPadControl(
             active = false,
             enabled = enabled,
             reserved = true,
+            fontSize = labelFontSize,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(LabelInset),
@@ -178,13 +191,14 @@ private fun GearLabel(
     symbol: String,
     active: Boolean,
     enabled: Boolean,
+    fontSize: TextUnit,
     modifier: Modifier = Modifier,
     reserved: Boolean = false,
 ) {
     Text(
         text = symbol,
         modifier = modifier,
-        fontSize = 22.sp,
+        fontSize = fontSize,
         fontWeight = FontWeight.Bold,
         color = when {
             !enabled -> LabelDisabled
@@ -195,16 +209,21 @@ private fun GearLabel(
     )
 }
 
-private fun directionOf(dx: Float, dy: Float): GearDirection = when {
-    abs(dx) > abs(dy) -> if (dx < 0f) GearDirection.Left else GearDirection.Right
-    else -> if (dy < 0f) GearDirection.Up else GearDirection.Down
+private fun slotOf(dx: Float, dy: Float, inverted: Boolean): GearSlot = when {
+    abs(dx) > abs(dy) -> if (dx < 0f) GearSlot.Neutral else GearSlot.Reserved
+    dy < 0f -> if (inverted) GearSlot.ShiftDown else GearSlot.ShiftUp
+    else -> if (inverted) GearSlot.ShiftUp else GearSlot.ShiftDown
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 private fun GearPadControlPreview() {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         GearPadControl(enabled = true, onEvent = {})
         GearPadControl(enabled = false, onEvent = {})
+        GearPadControl(enabled = true, onEvent = {}, inverted = true)
     }
 }
