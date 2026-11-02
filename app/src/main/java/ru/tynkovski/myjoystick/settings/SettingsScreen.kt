@@ -3,6 +3,7 @@ package ru.tynkovski.myjoystick.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -22,7 +23,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -39,15 +39,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.tynkovski.myjoystick.R
+import ru.tynkovski.myjoystick.ui.theme.MyJoystickTheme
 import ru.tynkovski.myjoystick.wheel.ControlMode
 import ru.tynkovski.myjoystick.wheel.EventProtocol
 import ru.tynkovski.myjoystick.wheel.WheelProtocol
 import ru.tynkovski.myjoystick.wheel.WheelSettings
 import ru.tynkovski.myjoystick.wheel.WheelState
 import kotlin.math.roundToInt
+
+private val ModeTabCorner = 12.dp
 
 @Composable
 fun SettingsScreen(
@@ -167,17 +172,10 @@ fun SettingsScreen(
 
         SectionTitle(stringResource(R.string.settings_section_control))
 
-        ModeOption(
-            title = stringResource(R.string.settings_control_mode_wheel),
-            selected = controlMode == ControlMode.WHEEL,
-            enabled = true,
-            onSelect = { controlMode = ControlMode.WHEEL },
-        )
-        ModeOption(
-            title = stringResource(R.string.settings_control_mode_tilt),
-            selected = controlMode == ControlMode.TILT,
-            enabled = tiltAvailable,
-            onSelect = { controlMode = ControlMode.TILT },
+        ModeTabs(
+            controlMode = controlMode,
+            tiltAvailable = tiltAvailable,
+            onSelect = { mode -> controlMode = mode },
         )
         if (!tiltAvailable) {
             Text(
@@ -189,52 +187,17 @@ fun SettingsScreen(
 
         HorizontalDivider()
 
-        SectionTitle(stringResource(R.string.settings_section_wheel))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.settings_lock_to_lock),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White,
-                modifier = Modifier.weight(1f),
+        when (controlMode) {
+            ControlMode.WHEEL -> LockToLockSection(
+                lockToLock = lockToLock,
+                onLockToLockChange = { degrees -> lockToLock = degrees },
             )
-            Text(
-                text = stringResource(R.string.settings_lock_to_lock_degrees, lockToLock),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
 
-        val lockOptions = WheelSettings.LOCK_TO_LOCK_OPTIONS.asReversed()
-        Slider(
-            value = lockOptions.indexOf(lockToLock).coerceAtLeast(0).toFloat(),
-            onValueChange = { index ->
-                lockToLock = lockOptions[index.roundToInt().coerceIn(lockOptions.indices)]
-            },
-            valueRange = 0f..(lockOptions.size - 1).toFloat(),
-            steps = lockOptions.size - 2,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            lockOptions.forEach { option ->
-                Text(
-                    text = stringResource(R.string.settings_lock_to_lock_degrees, option),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (option == lockToLock) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        Color.Gray
-                    },
-                )
-            }
+            ControlMode.TILT -> Text(
+                text = stringResource(R.string.settings_tilt_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+            )
         }
 
         HorizontalDivider()
@@ -295,32 +258,123 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
-private fun ModeOption(
-    title: String,
-    selected: Boolean,
-    enabled: Boolean,
-    onSelect: () -> Unit,
+private fun ModeTabs(
+    controlMode: ControlMode,
+    tiltAvailable: Boolean,
+    onSelect: (ControlMode) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .clickable(enabled = enabled, onClick = onSelect)
+            .clip(RoundedCornerShape(ModeTabCorner))
+            .background(Color(0xFF1C1C1C), RoundedCornerShape(ModeTabCorner))
+            .padding(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        ModeTab(
+            label = stringResource(R.string.settings_tab_wheel),
+            selected = controlMode == ControlMode.WHEEL,
+            enabled = true,
+            onSelect = { onSelect(ControlMode.WHEEL) },
+            modifier = Modifier.weight(1f),
+        )
+        ModeTab(
+            label = stringResource(R.string.settings_tab_tilt),
+            selected = controlMode == ControlMode.TILT,
+            enabled = tiltAvailable,
+            onSelect = { onSelect(ControlMode.TILT) },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun ModeTab(
+    label: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onSelect: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val contentColor = when {
+        !enabled -> Color.White.copy(alpha = 0.35f)
+        selected -> Color.White
+        else -> Color.White.copy(alpha = 0.7f)
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .clip(RoundedCornerShape(ModeTabCorner))
             .background(
-                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                else Color(0xFF1C1C1C),
-                RoundedCornerShape(10.dp),
+                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+                else Color.Transparent,
+                RoundedCornerShape(ModeTabCorner),
             )
-            .padding(horizontal = 12.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .clickable(enabled = enabled && !selected, onClick = onSelect)
+            .padding(vertical = 10.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            color = contentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun LockToLockSection(
+    lockToLock: Int,
+    onLockToLockChange: (Int) -> Unit,
+) {
+    SectionTitle(stringResource(R.string.settings_tab_wheel))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        RadioButton(selected = selected, onClick = null, enabled = enabled)
         Text(
-            text = title,
+            text = stringResource(R.string.settings_lock_to_lock),
             style = MaterialTheme.typography.bodyMedium,
-            color = if (enabled) Color.White else Color.White.copy(alpha = 0.4f),
+            color = Color.White,
+            modifier = Modifier.weight(1f),
         )
+        Text(
+            text = stringResource(R.string.settings_lock_to_lock_degrees, lockToLock),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+
+    val lockOptions = WheelSettings.LOCK_TO_LOCK_OPTIONS.asReversed()
+    Slider(
+        value = lockOptions.indexOf(lockToLock).coerceAtLeast(0).toFloat(),
+        onValueChange = { index ->
+            onLockToLockChange(lockOptions[index.roundToInt().coerceIn(lockOptions.indices)])
+        },
+        valueRange = 0f..(lockOptions.size - 1).toFloat(),
+        steps = lockOptions.size - 2,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        lockOptions.forEach { option ->
+            Text(
+                text = stringResource(R.string.settings_lock_to_lock_degrees, option),
+                style = MaterialTheme.typography.labelSmall,
+                color = if (option == lockToLock) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    Color.Gray
+                },
+            )
+        }
     }
 }
 
@@ -360,5 +414,54 @@ private fun StatusCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun SettingsWheelPreview() {
+    MyJoystickTheme(darkTheme = true, dynamicColor = false) {
+        SettingsScreen(
+            initial = WheelSettings(
+                ip = "192.168.1.42",
+                controlMode = ControlMode.WHEEL,
+            ),
+            onSave = {},
+            onBack = {},
+            onConnect = {},
+            onDisconnect = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun SettingsTiltPreview() {
+    MyJoystickTheme(darkTheme = true, dynamicColor = false) {
+        SettingsScreen(
+            initial = WheelSettings(
+                ip = "192.168.1.42",
+                controlMode = ControlMode.TILT,
+            ),
+            onSave = {},
+            onBack = {},
+            onConnect = {},
+            onDisconnect = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "No tilt sensor", widthDp = 411, heightDp = 891)
+@Composable
+private fun SettingsNoSensorPreview() {
+    MyJoystickTheme(darkTheme = true, dynamicColor = false) {
+        SettingsScreen(
+            initial = WheelSettings(controlMode = ControlMode.WHEEL),
+            onSave = {},
+            onBack = {},
+            onConnect = {},
+            onDisconnect = {},
+            tiltAvailable = false,
+        )
     }
 }

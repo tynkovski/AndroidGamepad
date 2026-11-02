@@ -38,11 +38,11 @@
     <string name="settings_packets">Пакетов отправлено</string>
     <string name="settings_section_control">Управление</string>
     <string name="settings_control_mode">Режим управления</string>
-    <string name="settings_control_mode_wheel">Руль (касание)</string>
-    <string name="settings_control_mode_tilt">Наклон телефона (гироскоп)</string>
     <string name="settings_control_mode_unavailable">Датчик наклона недоступен на этом устройстве</string>
+    <string name="settings_tab_wheel">Руль</string>
+    <string name="settings_tab_tilt">Гироскоп</string>
+    <string name="settings_tilt_hint">Поворот руля выполняется наклоном телефона.</string>
 
-    <string name="settings_section_wheel">Руль</string>
     <string name="settings_lock_to_lock">Угол поворота руля (от упора до упора)</string>
     <string name="settings_lock_to_lock_degrees">%1$d°</string>
     <string name="settings_section_pedals">Педали</string>
