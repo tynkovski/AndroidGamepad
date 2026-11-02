@@ -1,6 +1,7 @@
 package ru.tynkovski.myjoystick.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -20,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -31,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +42,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.tynkovski.myjoystick.R
+import ru.tynkovski.myjoystick.wheel.ControlMode
 import ru.tynkovski.myjoystick.wheel.EventProtocol
 import ru.tynkovski.myjoystick.wheel.WheelProtocol
 import ru.tynkovski.myjoystick.wheel.WheelSettings
@@ -51,6 +56,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onConnect: (WheelSettings) -> Unit,
     onDisconnect: () -> Unit,
+    tiltAvailable: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val status by WheelState.status.collectAsStateWithLifecycle()
@@ -58,6 +64,7 @@ fun SettingsScreen(
     var ip by remember(initial) { mutableStateOf(initial.ip) }
     var port by remember(initial) { mutableStateOf(initial.port.toString()) }
     var eventPort by remember(initial) { mutableStateOf(initial.eventPort.toString()) }
+    var controlMode by remember(initial) { mutableStateOf(initial.controlMode) }
     var lockToLock by remember(initial) { mutableStateOf(initial.lockToLockDegrees) }
     var pressRamp by remember(initial) { mutableStateOf(initial.pressRampMs.toString()) }
     var releaseRamp by remember(initial) { mutableStateOf(initial.releaseRampMs.toString()) }
@@ -71,6 +78,7 @@ fun SettingsScreen(
         eventPort = eventPort.toIntOrNull()
             ?.takeIf { it in 1..65535 }
             ?: EventProtocol.DEFAULT_EVENT_PORT,
+        controlMode = controlMode,
         lockToLockDegrees = lockToLock,
         pressRampMs = pressRamp.toIntOrNull()
             ?.coerceIn(WheelSettings.MIN_RAMP_MS, WheelSettings.MAX_RAMP_MS)
@@ -154,6 +162,30 @@ fun SettingsScreen(
             packetsSent = status.packetsSent,
             error = status.error,
         )
+
+        HorizontalDivider()
+
+        SectionTitle(stringResource(R.string.settings_section_control))
+
+        ModeOption(
+            title = stringResource(R.string.settings_control_mode_wheel),
+            selected = controlMode == ControlMode.WHEEL,
+            enabled = true,
+            onSelect = { controlMode = ControlMode.WHEEL },
+        )
+        ModeOption(
+            title = stringResource(R.string.settings_control_mode_tilt),
+            selected = controlMode == ControlMode.TILT,
+            enabled = tiltAvailable,
+            onSelect = { controlMode = ControlMode.TILT },
+        )
+        if (!tiltAvailable) {
+            Text(
+                text = stringResource(R.string.settings_control_mode_unavailable),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
 
         HorizontalDivider()
 
@@ -260,6 +292,36 @@ private fun SectionTitle(text: String) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
     )
+}
+
+@Composable
+private fun ModeOption(
+    title: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onSelect: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(enabled = enabled, onClick = onSelect)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                else Color(0xFF1C1C1C),
+                RoundedCornerShape(10.dp),
+            )
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null, enabled = enabled)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (enabled) Color.White else Color.White.copy(alpha = 0.4f),
+        )
+    }
 }
 
 @Composable

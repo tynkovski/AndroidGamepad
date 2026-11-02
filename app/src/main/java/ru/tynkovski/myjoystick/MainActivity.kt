@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,9 +23,11 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.tynkovski.myjoystick.control.ControlInputState
 import ru.tynkovski.myjoystick.control.ControlScreen
+import ru.tynkovski.myjoystick.control.TiltSteeringController
 import ru.tynkovski.myjoystick.settings.SettingsScreen
 import ru.tynkovski.myjoystick.ui.theme.MyJoystickTheme
 import ru.tynkovski.myjoystick.wheel.EventSender
+import ru.tynkovski.myjoystick.wheel.ControlMode
 import ru.tynkovski.myjoystick.wheel.WheelConfig
 import ru.tynkovski.myjoystick.wheel.WheelService
 import ru.tynkovski.myjoystick.wheel.WheelState
@@ -55,8 +58,28 @@ class MainActivity : ComponentActivity() {
                 val controlState = remember { ControlInputState() }
                 var showSettings by rememberSaveable { mutableStateOf(false) }
 
+                // Accelerometer/gyroscope based steering, active only in TILT mode.
+                val tiltController = remember {
+                    TiltSteeringController(this@MainActivity) { angle ->
+                        controlState.setWheelAngle(angle, WheelConfig.current.lockToLockDegrees)
+                    }
+                }
+                val tiltAvailable = remember { tiltController.isAvailable }
+
                 LaunchedEffect(settings.lockToLockDegrees) {
                     controlState.refreshSteering(settings.lockToLockDegrees)
+                    tiltController.updateMaxAngle(settings.lockToLockDegrees / 2f)
+                }
+
+                val tiltEnabled = settings.controlMode == ControlMode.TILT && tiltAvailable
+                DisposableEffect(tiltEnabled, settings.lockToLockDegrees) {
+                    if (tiltEnabled) {
+                        tiltController.start(settings.lockToLockDegrees / 2f)
+                    } else {
+                        tiltController.stop()
+                        controlState.setWheelAngle(0f, settings.lockToLockDegrees)
+                    }
+                    onDispose { tiltController.stop() }
                 }
 
                 if (showSettings) {
@@ -81,6 +104,7 @@ class MainActivity : ComponentActivity() {
                             WheelService.start(this)
                         },
                         onDisconnect = { WheelService.stop(this) },
+                        tiltAvailable = tiltAvailable,
                     )
                 } else {
                     ControlScreen(
@@ -92,6 +116,11 @@ class MainActivity : ComponentActivity() {
                         eventsEnabled = status.isRunning,
                         onEvent = { event -> EventSender.send(settings, event) },
                         onOpenSettings = { showSettings = true },
+                        controlMode = settings.controlMode,
+                        onRecenterTilt = {
+                            tiltController.recenter()
+                            controlState.setWheelAngle(0f, settings.lockToLockDegrees)
+                        },
                     )
                 }
             }

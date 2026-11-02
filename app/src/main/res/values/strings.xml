@@ -6,6 +6,8 @@
     <string name="control_settings">Настройки</string>
     <string name="pedal_gas">GAS</string>
     <string name="pedal_brake">BRAKE</string>
+    <string name="control_mode_tilt_recenter">Центрировать</string>
+    <string name="steering_state">Руль %1$d%%</string>
 
     <!-- One-shot command buttons -->
     <string name="event_shift_up_symbol" translatable="false">↑</string>
@@ -34,6 +36,12 @@
     <string name="settings_connect">Подключить</string>
     <string name="settings_disconnect">Отключить</string>
     <string name="settings_packets">Пакетов отправлено</string>
+    <string name="settings_section_control">Управление</string>
+    <string name="settings_control_mode">Режим управления</string>
+    <string name="settings_control_mode_wheel">Руль (касание)</string>
+    <string name="settings_control_mode_tilt">Наклон телефона (гироскоп)</string>
+    <string name="settings_control_mode_unavailable">Датчик наклона недоступен на этом устройстве</string>
+
     <string name="settings_section_wheel">Руль</string>
     <string name="settings_lock_to_lock">Угол поворота руля (от упора до упора)</string>
     <string name="settings_lock_to_lock_degrees">%1$d°</string>
@@ -56,4 +64,5 @@
     <string name="error_no_ip">Укажите IP-адрес ПК</string>
     <string name="error_send_failed">Ошибка отправки UDP</string>
     <string name="error_local_network">Нет доступа к локальной сети. Разрешите «Устройства рядом» в настройках приложения.</string>
+    <string name="error_tilt_unavailable">Датчик наклона недоступен, включён режим руля</string>
 </resources>

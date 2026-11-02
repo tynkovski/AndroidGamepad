@@ -12,6 +12,7 @@ data class WheelSettings(
     val ip: String = "",
     val port: Int = WheelProtocol.DEFAULT_PORT,
     val eventPort: Int = EventProtocol.DEFAULT_EVENT_PORT,
+    val controlMode: ControlMode = ControlMode.WHEEL,
     val lockToLockDegrees: Int = DEFAULT_LOCK_TO_LOCK,
     val pressRampMs: Int = DEFAULT_PRESS_RAMP_MS,
     val releaseRampMs: Int = DEFAULT_RELEASE_RAMP_MS,
@@ -55,6 +56,7 @@ object WheelConfig {
             putString(KEY_IP, settings.ip)
             putInt(KEY_PORT, settings.port)
             putInt(KEY_EVENT_PORT, settings.eventPort)
+            putString(KEY_CONTROL_MODE, settings.controlMode.name)
             putInt(KEY_LOCK_TO_LOCK, settings.lockToLockDegrees)
             putInt(KEY_PRESS_RAMP, settings.pressRampMs)
             putInt(KEY_RELEASE_RAMP, settings.releaseRampMs)
@@ -69,6 +71,9 @@ object WheelConfig {
             .takeIf { it in 1..65535 } ?: WheelProtocol.DEFAULT_PORT,
         eventPort = prefs.getInt(KEY_EVENT_PORT, EventProtocol.DEFAULT_EVENT_PORT)
             .takeIf { it in 1..65535 } ?: EventProtocol.DEFAULT_EVENT_PORT,
+        controlMode = prefs.getString(KEY_CONTROL_MODE, null)
+            ?.let { name -> ControlMode.entries.firstOrNull { it.name == name } }
+            ?: ControlMode.WHEEL,
         lockToLockDegrees = WheelSettings.snapLockToLock(
             prefs.getInt(KEY_LOCK_TO_LOCK, WheelSettings.DEFAULT_LOCK_TO_LOCK),
         ),
@@ -83,6 +88,7 @@ object WheelConfig {
     private const val KEY_IP = "ip"
     private const val KEY_PORT = "port"
     private const val KEY_EVENT_PORT = "evtPort"
+    private const val KEY_CONTROL_MODE = "control_mode"
     private const val KEY_LOCK_TO_LOCK = "lock_to_lock_degrees"
     private const val KEY_PRESS_RAMP = "press_ramp_ms"
     private const val KEY_RELEASE_RAMP = "release_ramp_ms"

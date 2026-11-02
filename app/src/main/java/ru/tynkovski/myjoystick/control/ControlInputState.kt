@@ -32,6 +32,13 @@ class ControlInputState {
         WheelInputState.steering = steering(lockToLockDegrees)
     }
 
+    /** Applies an absolute steering angle, e.g. from the tilt sensor. */
+    fun setWheelAngle(angleDegrees: Float, lockToLockDegrees: Int) {
+        val half = halfTravel(lockToLockDegrees)
+        wheelAngleDegrees = angleDegrees.coerceIn(-half, half)
+        WheelInputState.steering = steering(lockToLockDegrees)
+    }
+
     fun updateThrottle(value: Float) {
         throttle = value.coerceIn(0f, 1f)
         WheelInputState.throttle = throttle
