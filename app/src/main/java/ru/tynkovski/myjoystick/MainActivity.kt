@@ -58,7 +58,6 @@ class MainActivity : ComponentActivity() {
                 val controlState = remember { ControlInputState() }
                 var showSettings by rememberSaveable { mutableStateOf(false) }
 
-                // Accelerometer/gyroscope based steering, active only in TILT mode.
                 val tiltController = remember {
                     TiltSteeringController(this@MainActivity) { angle ->
                         controlState.setWheelAngle(angle, WheelConfig.current.lockToLockDegrees)
@@ -77,7 +76,6 @@ class MainActivity : ComponentActivity() {
                         tiltController.start(settings.lockToLockDegrees / 2f)
                     } else {
                         tiltController.stop()
-                        controlState.setWheelAngle(0f, settings.lockToLockDegrees)
                     }
                     onDispose { tiltController.stop() }
                 }

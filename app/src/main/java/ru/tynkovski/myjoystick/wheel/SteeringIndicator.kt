@@ -25,10 +25,6 @@ private val TrackColor = Color(0x14FFFFFF)
 
 private val SteeringColor = Color(0xCCFFFFFF)
 
-/**
- * Minimal steering readout: a thin bar that grows from the centre towards the edge the wheels
- * are turned to. No labels, no background chrome.
- */
 @Composable
 fun SteeringIndicator(
     steering: Float,

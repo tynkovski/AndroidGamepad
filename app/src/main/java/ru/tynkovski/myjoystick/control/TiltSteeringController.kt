@@ -13,18 +13,6 @@ import kotlin.math.atan2
 import kotlin.math.exp
 import kotlin.math.sqrt
 
-/**
- * Turns phone tilt into a steering angle in degrees.
- *
- * The phone is held like a steering wheel and rotated in the plane of the screen. That rotation
- * is measured by a complementary filter:
- *  - the accelerometer provides the absolute angle of the gravity vector projected onto the
- *    screen plane (no drift, but noisy);
- *  - the gyroscope provides the fast rotation rate around the screen normal (smooth, but drifts).
- *
- * The neutral position is captured when the controller starts, so the wheel is centred with
- * whatever way the user naturally holds the phone.
- */
 class TiltSteeringController(
     context: Context,
     private val onAngleChanged: (Float) -> Unit,
@@ -41,10 +29,15 @@ class TiltSteeringController(
     private var filteredAngle = 0f
     private var neutralAngle = 0f
     private var hasNeutral = false
-    private var lastTimestampNanos = 0L
     private var started = false
 
-    /** False when the device has no accelerometer, so tilt steering cannot be used. */
+    private var accelTimeConstant = FAST_ACCEL_TIME_CONSTANT_SECONDS
+
+    private var lastAccelNanos = 0L
+    private var lastGyroNanos = 0L
+
+    private var emittedAngle = Float.NaN
+
     val isAvailable: Boolean get() = accelerometer != null
 
     fun start(maxAngleDegrees: Float) {
@@ -52,9 +45,17 @@ class TiltSteeringController(
         if (started) return
         val accel = accelerometer ?: return
         started = true
-        lastTimestampNanos = 0L
         hasNeutral = false
         filteredAngle = 0f
+        neutralAngle = 0f
+        lastAccelNanos = 0L
+        lastGyroNanos = 0L
+        emittedAngle = Float.NaN
+        accelTimeConstant = if (gyroscope != null) {
+            SLOW_ACCEL_TIME_CONSTANT_SECONDS
+        } else {
+            FAST_ACCEL_TIME_CONSTANT_SECONDS
+        }
         sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_GAME)
         gyroscope?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
     }
@@ -62,7 +63,9 @@ class TiltSteeringController(
     fun stop() {
         if (!started) return
         started = false
-        lastTimestampNanos = 0L
+        hasNeutral = false
+        lastAccelNanos = 0L
+        lastGyroNanos = 0L
         sensorManager.unregisterListener(this)
         onAngleChanged(0f)
     }
@@ -71,66 +74,69 @@ class TiltSteeringController(
         this.maxAngleDegrees = maxAngleDegrees.coerceAtLeast(1f)
     }
 
-    /** Drops the current hold position as the new centre of the wheel. */
     fun recenter() {
+        if (!hasNeutral) return
         neutralAngle = filteredAngle
-        hasNeutral = true
     }
 
     override fun onSensorChanged(event: SensorEvent) {
         if (!started) return
-        val now = SystemClock.elapsedRealtimeNanos()
-        val dt = if (lastTimestampNanos == 0L) {
-            0f
-        } else {
-            ((now - lastTimestampNanos) / 1_000_000_000f).coerceIn(0f, 0.1f)
+        val changed = when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> updateFromAccelerometer(event.values)
+            Sensor.TYPE_GYROSCOPE -> updateFromGyroscope(event.values[2])
+            else -> false
         }
-        lastTimestampNanos = now
-
-        when (event.sensor.type) {
-            Sensor.TYPE_ACCELEROMETER -> {
-                val measured = deviceRollDegrees(event.values)
-                if (!hasNeutral) {
-                    filteredAngle = measured
-                    neutralAngle = measured
-                    hasNeutral = true
-                } else {
-                    // Accelerometer pulls the estimate towards the absolute gravity angle.
-                    filteredAngle += accelWeight(dt) * shortestDelta(filteredAngle, measured)
-                }
-            }
-
-            Sensor.TYPE_GYROSCOPE -> {
-                // +Z of the device frame points out of the screen, so a positive rate is a
-                // counter-clockwise rotation, the same direction the accelerometer angle uses.
-                filteredAngle += event.values[2].toDegrees() * dt
-            }
-        }
-
-        // The wheel angle used by the rest of the app grows clockwise on screen (it comes from
-        // atan2 with the screen Y axis pointing down), while the roll estimate grows
-        // counter-clockwise, so the sign has to be flipped here.
-        val offset = if (hasNeutral) -shortestDelta(neutralAngle, filteredAngle) else 0f
-        val angle = (offset * maxAngleDegrees / FULL_LOCK_DEGREES).coerceIn(
-            -maxAngleDegrees,
-            maxAngleDegrees,
-        )
-        onAngleChanged(angle)
+        if (changed) emitAngle()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
-    /** Angle of the gravity vector inside the screen plane, corrected for display rotation. */
-    private fun deviceRollDegrees(values: FloatArray): Float {
-        val (right, up) = remapForRotation(values[0], values[1])
-        if (sqrt(values[0] * values[0] + values[1] * values[1]) < MIN_GRAVITY_IN_PLANE) {
-            // Phone is lying flat: in-plane rotation is undefined, keep the last estimate.
-            return filteredAngle
+    private fun updateFromAccelerometer(values: FloatArray): Boolean {
+        val now = SystemClock.elapsedRealtimeNanos()
+        val dt = elapsedSeconds(lastAccelNanos, now)
+        lastAccelNanos = now
+
+        val measured = deviceRollDegrees(values) ?: return false
+
+        if (!hasNeutral) {
+            filteredAngle = measured
+            neutralAngle = measured
+            hasNeutral = true
+        } else {
+            filteredAngle += accelWeight(dt) * shortestDelta(filteredAngle, measured)
         }
+        return true
+    }
+
+    private fun updateFromGyroscope(rateRad: Float): Boolean {
+        if (!hasNeutral) return false
+        val now = SystemClock.elapsedRealtimeNanos()
+        val dt = elapsedSeconds(lastGyroNanos, now)
+        lastGyroNanos = now
+
+        filteredAngle += gyroRate(rateRad) * dt
+        return true
+    }
+
+    private fun emitAngle() {
+        if (!hasNeutral) return
+        val offset = -shortestDelta(neutralAngle, filteredAngle)
+        val angle = (offset * maxAngleDegrees / FULL_LOCK_DEGREES).coerceIn(
+            -maxAngleDegrees,
+            maxAngleDegrees,
+        )
+        if (!emittedAngle.isNaN() && abs(angle - emittedAngle) < ANGLE_EMIT_EPSILON) return
+        emittedAngle = angle
+        onAngleChanged(angle)
+    }
+
+    private fun deviceRollDegrees(values: FloatArray): Float? {
+        val inPlane = sqrt(values[0] * values[0] + values[1] * values[1])
+        if (inPlane < MIN_GRAVITY_IN_PLANE) return null
+        val (right, up) = remapForRotation(values[0], values[1])
         return Math.toDegrees(atan2(right, up).toDouble()).toFloat()
     }
 
-    /** Projects the device X/Y axes onto the current screen orientation. */
     private fun remapForRotation(x: Float, y: Float): Pair<Float, Float> =
         when (displayRotation()) {
             Surface.ROTATION_90 -> -y to x
@@ -144,28 +150,38 @@ class TiltSteeringController(
         windowManager?.defaultDisplay?.rotation ?: Surface.ROTATION_0
     }.getOrDefault(Surface.ROTATION_0)
 
-    /** Complementary filter weight for the accelerometer, based on the elapsed time. */
+    private fun elapsedSeconds(previousNanos: Long, nowNanos: Long): Float {
+        if (previousNanos == 0L) return 0f
+        return ((nowNanos - previousNanos) / 1_000_000_000f).coerceIn(0f, 0.1f)
+    }
+
     private fun accelWeight(dt: Float): Float {
         if (dt <= 0f) return 0f
-        return (1.0 - exp((-dt / ACCEL_TIME_CONSTANT_SECONDS).toDouble())).toFloat()
+        return (1.0 - exp((-dt / accelTimeConstant).toDouble())).toFloat()
+    }
+
+    private fun gyroRate(rawRateRad: Float): Float {
+        val degrees = rawRateRad.toDegrees()
+        return if (abs(degrees) < GYRO_RATE_DEADBAND) 0f else degrees
     }
 
     companion object {
-        /** Steering travel used when no lock-to-lock value is provided. */
         const val DEFAULT_MAX_ANGLE = 480f
 
-        /** Screen-plane rotation, in degrees, that corresponds to a full steering lock. */
         private const val FULL_LOCK_DEGREES = 40f
 
-        /** Time constant of the accelerometer correction, seconds. */
-        private const val ACCEL_TIME_CONSTANT_SECONDS = 0.25f
+        private const val SLOW_ACCEL_TIME_CONSTANT_SECONDS = 1.5f
 
-        /** Below this gravity magnitude (g) the phone is flat and the in-plane angle is noise. */
+        private const val FAST_ACCEL_TIME_CONSTANT_SECONDS = 0.2f
+
+        private const val GYRO_RATE_DEADBAND = 0.6f
+
+        private const val ANGLE_EMIT_EPSILON = 0.05f
+
         private const val MIN_GRAVITY_IN_PLANE = 0.15f
 
         private fun Float.toDegrees(): Float = (this * 180.0 / Math.PI).toFloat()
 
-        /** Signed shortest difference between two angles, in (-180, 180]. */
         private fun shortestDelta(from: Float, to: Float): Float {
             var delta = (to - from) % 360f
             if (delta > 180f) delta -= 360f
