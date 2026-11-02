@@ -76,6 +76,7 @@ fun SettingsScreen(
     var releaseRamp by remember(initial) { mutableStateOf(initial.releaseRampMs.toString()) }
     var brakeInverted by remember(initial) { mutableStateOf(initial.brakeAxisInverted) }
     var tiltSensitivity by remember(initial) { mutableFloatStateOf(initial.tiltSensitivity) }
+    var axisWidth by remember(initial) { mutableFloatStateOf(initial.axisWidthFraction) }
 
     fun formSettings(): WheelSettings = WheelSettings(
         ip = ip,
@@ -95,6 +96,7 @@ fun SettingsScreen(
             ?: WheelSettings.DEFAULT_RELEASE_RAMP_MS,
         brakeAxisInverted = brakeInverted,
         tiltSensitivity = WheelSettings.snapTiltSensitivity(tiltSensitivity),
+        axisWidthFraction = WheelSettings.snapAxisWidth(axisWidth),
     )
 
     Column(
@@ -205,6 +207,11 @@ fun SettingsScreen(
         HorizontalDivider()
 
         SectionTitle(stringResource(R.string.settings_section_pedals))
+
+        AxisWidthSection(
+            axisWidth = axisWidth,
+            onAxisWidthChange = { value -> axisWidth = value },
+        )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
@@ -394,6 +401,70 @@ private fun TiltSection(
 private fun tiltSensitivitySteps(): Int {
     val range = WheelSettings.MAX_TILT_SENSITIVITY - WheelSettings.MIN_TILT_SENSITIVITY
     return (range / WheelSettings.TILT_SENSITIVITY_STEP).roundToInt() - 1
+}
+
+@Composable
+private fun AxisWidthSection(
+    axisWidth: Float,
+    onAxisWidthChange: (Float) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.settings_axis_width),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = stringResource(
+                R.string.settings_axis_width_value,
+                (WheelSettings.snapAxisWidth(axisWidth) * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+
+    Slider(
+        value = WheelSettings.snapAxisWidth(axisWidth),
+        onValueChange = { value ->
+            onAxisWidthChange(WheelSettings.snapAxisWidth(value))
+        },
+        valueRange = WheelSettings.MIN_AXIS_WIDTH_FRACTION..WheelSettings.MAX_AXIS_WIDTH_FRACTION,
+        steps = axisWidthSteps(),
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(
+                R.string.settings_axis_width_value,
+                (WheelSettings.MIN_AXIS_WIDTH_FRACTION * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray,
+        )
+        Text(
+            text = stringResource(
+                R.string.settings_axis_width_value,
+                (WheelSettings.MAX_AXIS_WIDTH_FRACTION * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray,
+        )
+    }
+}
+
+private fun axisWidthSteps(): Int {
+    val range = WheelSettings.MAX_AXIS_WIDTH_FRACTION - WheelSettings.MIN_AXIS_WIDTH_FRACTION
+    return (range / WheelSettings.AXIS_WIDTH_STEP).roundToInt() - 1
 }
 
 @Composable

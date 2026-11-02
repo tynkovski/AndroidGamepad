@@ -76,6 +76,7 @@ fun ControlScreen(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     controlMode: ControlMode = ControlMode.WHEEL,
+    axisWidthFraction: Float = STRIP_WIDTH_FRACTION,
     onRecenterTilt: () -> Unit = {},
 ) {
     BoxWithConstraints(
@@ -84,7 +85,7 @@ fun ControlScreen(
             .background(Color.Black)
             .displayCutoutPadding(),
     ) {
-        val stripWidth = maxWidth * STRIP_WIDTH_FRACTION
+        val stripWidth = maxWidth * axisWidthFraction
         val stripHeight = maxHeight - (ScreenEdge * 2)
 
         when (controlMode) {
@@ -260,11 +261,15 @@ private fun BoxWithConstraintsScope.TiltLayout(
             ) {
                 SettingsButton(onClick = onOpenSettings)
 
-                OutlinedButton(
+                IconButton(
                     onClick = onRecenterTilt,
-                    modifier = Modifier,
+                    modifier = Modifier.background(Color(0x33FFFFFF), CircleShape),
                 ) {
-                    Text(stringResource(R.string.control_mode_tilt_recenter))
+                    Text(
+                        text = stringResource(R.string.control_mode_tilt_recenter_symbol),
+                        fontSize = 24.sp,
+                        color = Color.White,
+                    )
                 }
             }
 

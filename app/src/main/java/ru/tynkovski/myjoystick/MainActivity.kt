@@ -122,6 +122,7 @@ class MainActivity : ComponentActivity() {
                         onEvent = { event -> EventSender.send(settings, event) },
                         onOpenSettings = { showSettings = true },
                         controlMode = settings.controlMode,
+                        axisWidthFraction = settings.axisWidthFraction,
                         onRecenterTilt = {
                             tiltController.recenter()
                             controlState.setWheelAngle(0f, settings.lockToLockDegrees)

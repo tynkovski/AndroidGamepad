@@ -19,6 +19,7 @@ data class WheelSettings(
     val releaseRampMs: Int = DEFAULT_RELEASE_RAMP_MS,
     val brakeAxisInverted: Boolean = false,
     val tiltSensitivity: Float = DEFAULT_TILT_SENSITIVITY,
+    val axisWidthFraction: Float = DEFAULT_AXIS_WIDTH_FRACTION,
 ) {
     val target: String get() = "$ip:$port"
 
@@ -45,6 +46,18 @@ data class WheelSettings(
                 MIN_TILT_SENSITIVITY) / TILT_SENSITIVITY_STEP).roundToInt()
             return (MIN_TILT_SENSITIVITY + steps * TILT_SENSITIVITY_STEP)
                 .coerceIn(MIN_TILT_SENSITIVITY, MAX_TILT_SENSITIVITY)
+        }
+
+        const val DEFAULT_AXIS_WIDTH_FRACTION = 0.09f
+        const val MIN_AXIS_WIDTH_FRACTION = 0.05f
+        const val MAX_AXIS_WIDTH_FRACTION = 0.18f
+        const val AXIS_WIDTH_STEP = 0.005f
+
+        fun snapAxisWidth(value: Float): Float {
+            val steps = ((value.coerceIn(MIN_AXIS_WIDTH_FRACTION, MAX_AXIS_WIDTH_FRACTION) -
+                MIN_AXIS_WIDTH_FRACTION) / AXIS_WIDTH_STEP).roundToInt()
+            return (MIN_AXIS_WIDTH_FRACTION + steps * AXIS_WIDTH_STEP)
+                .coerceIn(MIN_AXIS_WIDTH_FRACTION, MAX_AXIS_WIDTH_FRACTION)
         }
     }
 }
@@ -76,6 +89,7 @@ object WheelConfig {
             putInt(KEY_RELEASE_RAMP, settings.releaseRampMs)
             putBoolean(KEY_BRAKE_INVERTED, settings.brakeAxisInverted)
             putFloat(KEY_TILT_SENSITIVITY, settings.tiltSensitivity)
+            putFloat(KEY_AXIS_WIDTH, settings.axisWidthFraction)
         }
         _settings.value = settings
     }
@@ -104,6 +118,13 @@ object WheelConfig {
             WheelSettings.MIN_TILT_SENSITIVITY,
             WheelSettings.MAX_TILT_SENSITIVITY,
         ),
+        axisWidthFraction = prefs.getFloat(
+            KEY_AXIS_WIDTH,
+            WheelSettings.DEFAULT_AXIS_WIDTH_FRACTION,
+        ).coerceIn(
+            WheelSettings.MIN_AXIS_WIDTH_FRACTION,
+            WheelSettings.MAX_AXIS_WIDTH_FRACTION,
+        ),
     )
 
     private const val PREFS_NAME = "wheel"
@@ -116,4 +137,5 @@ object WheelConfig {
     private const val KEY_RELEASE_RAMP = "release_ramp_ms"
     private const val KEY_BRAKE_INVERTED = "brake_axis_inverted"
     private const val KEY_TILT_SENSITIVITY = "tilt_sensitivity"
+    private const val KEY_AXIS_WIDTH = "axis_width_fraction"
 }

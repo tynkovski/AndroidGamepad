@@ -49,6 +49,8 @@
     <string name="settings_lock_to_lock">Угол поворота руля (от упора до упора)</string>
     <string name="settings_lock_to_lock_degrees">%1$d°</string>
     <string name="settings_section_pedals">Педали</string>
+    <string name="settings_axis_width">Ширина осей</string>
+    <string name="settings_axis_width_value">%1$d%%</string>
     <string name="settings_press_ramp">Нажатие, мс</string>
     <string name="settings_release_ramp">Отпускание, мс</string>
     <string name="settings_brake_axis_inverted">Развернуть ось тормоза на 180°</string>
