@@ -1,5 +1,5 @@
 [versions]
-appVersion = "1.1"
+appVersion = "1.2"
 
 agp = "9.4.1"
 coreKtx = "1.19.1"
