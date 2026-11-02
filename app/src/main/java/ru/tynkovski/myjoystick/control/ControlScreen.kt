@@ -56,6 +56,8 @@ private val ScreenEdge = 16.dp
 
 private val ButtonsPedalGap = 12.dp
 
+private val GearPadGap = 38.dp
+
 private val TiltHintInset = 18.dp
 
 private const val TiltIndicatorWidthFraction = 1f
@@ -142,7 +144,7 @@ private fun BoxWithConstraintsScope.WheelLayout(
         modifier = Modifier
             .align(Alignment.BottomEnd)
             .padding(ScreenEdge),
-        horizontalArrangement = Arrangement.spacedBy(ButtonsPedalGap),
+        horizontalArrangement = Arrangement.spacedBy(GearPadGap),
     ) {
         Box(modifier = Modifier.fillMaxHeight()) {
             GearPadControl(
@@ -197,7 +199,7 @@ private fun BoxWithConstraintsScope.TiltLayout(
             .align(Alignment.CenterStart)
             .padding(start = ScreenEdge),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(ButtonsPedalGap),
+        horizontalArrangement = Arrangement.spacedBy(GearPadGap),
     ) {
         PedalControl(
             label = stringResource(R.string.pedal_brake),
@@ -221,7 +223,7 @@ private fun BoxWithConstraintsScope.TiltLayout(
             .align(Alignment.CenterEnd)
             .padding(end = ScreenEdge),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(ButtonsPedalGap),
+        horizontalArrangement = Arrangement.spacedBy(GearPadGap),
     ) {
         GearPadControl(
             enabled = eventsEnabled,
