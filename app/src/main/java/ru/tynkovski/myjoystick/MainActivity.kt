@@ -70,10 +70,17 @@ class MainActivity : ComponentActivity() {
                     tiltController.updateMaxAngle(settings.lockToLockDegrees / 2f)
                 }
 
+                LaunchedEffect(settings.tiltSensitivity) {
+                    tiltController.updateSensitivity(settings.tiltSensitivity)
+                }
+
                 val tiltEnabled = settings.controlMode == ControlMode.TILT && tiltAvailable
                 DisposableEffect(tiltEnabled, settings.lockToLockDegrees) {
                     if (tiltEnabled) {
-                        tiltController.start(settings.lockToLockDegrees / 2f)
+                        tiltController.start(
+                            maxAngleDegrees = settings.lockToLockDegrees / 2f,
+                            sensitivity = settings.tiltSensitivity,
+                        )
                     } else {
                         tiltController.stop()
                     }

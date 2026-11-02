@@ -43,6 +43,8 @@
     <string name="settings_tab_wheel">Руль</string>
     <string name="settings_tab_tilt">Гироскоп</string>
     <string name="settings_tilt_hint">Поворот руля выполняется наклоном телефона.</string>
+    <string name="settings_tilt_sensitivity">Чувствительность наклона</string>
+    <string name="settings_tilt_sensitivity_value">%1$d%%</string>
 
     <string name="settings_lock_to_lock">Угол поворота руля (от упора до упора)</string>
     <string name="settings_lock_to_lock_degrees">%1$d°</string>

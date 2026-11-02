@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -74,6 +75,7 @@ fun SettingsScreen(
     var pressRamp by remember(initial) { mutableStateOf(initial.pressRampMs.toString()) }
     var releaseRamp by remember(initial) { mutableStateOf(initial.releaseRampMs.toString()) }
     var brakeInverted by remember(initial) { mutableStateOf(initial.brakeAxisInverted) }
+    var tiltSensitivity by remember(initial) { mutableFloatStateOf(initial.tiltSensitivity) }
 
     fun formSettings(): WheelSettings = WheelSettings(
         ip = ip,
@@ -92,6 +94,7 @@ fun SettingsScreen(
             ?.coerceIn(WheelSettings.MIN_RAMP_MS, WheelSettings.MAX_RAMP_MS)
             ?: WheelSettings.DEFAULT_RELEASE_RAMP_MS,
         brakeAxisInverted = brakeInverted,
+        tiltSensitivity = WheelSettings.snapTiltSensitivity(tiltSensitivity),
     )
 
     Column(
@@ -193,10 +196,9 @@ fun SettingsScreen(
                 onLockToLockChange = { degrees -> lockToLock = degrees },
             )
 
-            ControlMode.TILT -> Text(
-                text = stringResource(R.string.settings_tilt_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+            ControlMode.TILT -> TiltSection(
+                sensitivity = tiltSensitivity,
+                onSensitivityChange = { value -> tiltSensitivity = value },
             )
         }
 
@@ -322,6 +324,76 @@ private fun ModeTab(
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+@Composable
+private fun TiltSection(
+    sensitivity: Float,
+    onSensitivityChange: (Float) -> Unit,
+) {
+    Text(
+        text = stringResource(R.string.settings_tilt_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = Color.Gray,
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.settings_tilt_sensitivity),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = stringResource(
+                R.string.settings_tilt_sensitivity_value,
+                (WheelSettings.snapTiltSensitivity(sensitivity) * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+
+    Slider(
+        value = WheelSettings.snapTiltSensitivity(sensitivity),
+        onValueChange = { value ->
+            onSensitivityChange(WheelSettings.snapTiltSensitivity(value))
+        },
+        valueRange = WheelSettings.MIN_TILT_SENSITIVITY..WheelSettings.MAX_TILT_SENSITIVITY,
+        steps = tiltSensitivitySteps(),
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(
+                R.string.settings_tilt_sensitivity_value,
+                (WheelSettings.MIN_TILT_SENSITIVITY * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray,
+        )
+        Text(
+            text = stringResource(
+                R.string.settings_tilt_sensitivity_value,
+                (WheelSettings.MAX_TILT_SENSITIVITY * 100).roundToInt(),
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.Gray,
+        )
+    }
+}
+
+private fun tiltSensitivitySteps(): Int {
+    val range = WheelSettings.MAX_TILT_SENSITIVITY - WheelSettings.MIN_TILT_SENSITIVITY
+    return (range / WheelSettings.TILT_SENSITIVITY_STEP).roundToInt() - 1
 }
 
 @Composable

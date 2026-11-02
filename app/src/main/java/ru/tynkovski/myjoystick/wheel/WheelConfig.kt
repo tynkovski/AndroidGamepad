@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 data class WheelSettings(
     val ip: String = "",
@@ -17,6 +18,7 @@ data class WheelSettings(
     val pressRampMs: Int = DEFAULT_PRESS_RAMP_MS,
     val releaseRampMs: Int = DEFAULT_RELEASE_RAMP_MS,
     val brakeAxisInverted: Boolean = false,
+    val tiltSensitivity: Float = DEFAULT_TILT_SENSITIVITY,
 ) {
     val target: String get() = "$ip:$port"
 
@@ -32,6 +34,18 @@ data class WheelSettings(
 
         const val MIN_RAMP_MS = 0
         const val MAX_RAMP_MS = 2000
+
+        const val DEFAULT_TILT_SENSITIVITY = 1f
+        const val MIN_TILT_SENSITIVITY = 0.5f
+        const val MAX_TILT_SENSITIVITY = 1f
+        const val TILT_SENSITIVITY_STEP = 0.05f
+
+        fun snapTiltSensitivity(value: Float): Float {
+            val steps = ((value.coerceIn(MIN_TILT_SENSITIVITY, MAX_TILT_SENSITIVITY) -
+                MIN_TILT_SENSITIVITY) / TILT_SENSITIVITY_STEP).roundToInt()
+            return (MIN_TILT_SENSITIVITY + steps * TILT_SENSITIVITY_STEP)
+                .coerceIn(MIN_TILT_SENSITIVITY, MAX_TILT_SENSITIVITY)
+        }
     }
 }
 
@@ -61,6 +75,7 @@ object WheelConfig {
             putInt(KEY_PRESS_RAMP, settings.pressRampMs)
             putInt(KEY_RELEASE_RAMP, settings.releaseRampMs)
             putBoolean(KEY_BRAKE_INVERTED, settings.brakeAxisInverted)
+            putFloat(KEY_TILT_SENSITIVITY, settings.tiltSensitivity)
         }
         _settings.value = settings
     }
@@ -82,6 +97,13 @@ object WheelConfig {
         releaseRampMs = prefs.getInt(KEY_RELEASE_RAMP, WheelSettings.DEFAULT_RELEASE_RAMP_MS)
             .coerceIn(WheelSettings.MIN_RAMP_MS, WheelSettings.MAX_RAMP_MS),
         brakeAxisInverted = prefs.getBoolean(KEY_BRAKE_INVERTED, false),
+        tiltSensitivity = prefs.getFloat(
+            KEY_TILT_SENSITIVITY,
+            WheelSettings.DEFAULT_TILT_SENSITIVITY,
+        ).coerceIn(
+            WheelSettings.MIN_TILT_SENSITIVITY,
+            WheelSettings.MAX_TILT_SENSITIVITY,
+        ),
     )
 
     private const val PREFS_NAME = "wheel"
@@ -93,4 +115,5 @@ object WheelConfig {
     private const val KEY_PRESS_RAMP = "press_ramp_ms"
     private const val KEY_RELEASE_RAMP = "release_ramp_ms"
     private const val KEY_BRAKE_INVERTED = "brake_axis_inverted"
+    private const val KEY_TILT_SENSITIVITY = "tilt_sensitivity"
 }

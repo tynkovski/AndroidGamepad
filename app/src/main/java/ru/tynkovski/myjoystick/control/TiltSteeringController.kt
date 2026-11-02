@@ -26,6 +26,7 @@ class TiltSteeringController(
         context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
 
     private var maxAngleDegrees = DEFAULT_MAX_ANGLE
+    private var sensitivity = DEFAULT_SENSITIVITY
     private var filteredAngle = 0f
     private var neutralAngle = 0f
     private var hasNeutral = false
@@ -40,8 +41,9 @@ class TiltSteeringController(
 
     val isAvailable: Boolean get() = accelerometer != null
 
-    fun start(maxAngleDegrees: Float) {
+    fun start(maxAngleDegrees: Float, sensitivity: Float = DEFAULT_SENSITIVITY) {
         this.maxAngleDegrees = maxAngleDegrees.coerceAtLeast(1f)
+        updateSensitivity(sensitivity)
         if (started) return
         val accel = accelerometer ?: return
         started = true
@@ -72,6 +74,10 @@ class TiltSteeringController(
 
     fun updateMaxAngle(maxAngleDegrees: Float) {
         this.maxAngleDegrees = maxAngleDegrees.coerceAtLeast(1f)
+    }
+
+    fun updateSensitivity(sensitivity: Float) {
+        this.sensitivity = sensitivity.coerceIn(MIN_SENSITIVITY, MAX_SENSITIVITY)
     }
 
     fun recenter() {
@@ -121,7 +127,7 @@ class TiltSteeringController(
     private fun emitAngle() {
         if (!hasNeutral) return
         val offset = -shortestDelta(neutralAngle, filteredAngle)
-        val angle = (offset * maxAngleDegrees / FULL_LOCK_DEGREES).coerceIn(
+        val angle = (offset * (maxAngleDegrees * sensitivity) / FULL_LOCK_DEGREES).coerceIn(
             -maxAngleDegrees,
             maxAngleDegrees,
         )
@@ -167,6 +173,12 @@ class TiltSteeringController(
 
     companion object {
         const val DEFAULT_MAX_ANGLE = 480f
+
+        private const val DEFAULT_SENSITIVITY = 1f
+
+        private const val MIN_SENSITIVITY = 0.1f
+
+        private const val MAX_SENSITIVITY = 1f
 
         private const val FULL_LOCK_DEGREES = 40f
 
