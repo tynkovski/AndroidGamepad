@@ -5,9 +5,12 @@ The phone streams axis state over UDP to a PC at 100 Hz, where it is received by
 [daemon](https://github.com/tynkovski/androidjoystick-daemon) that creates a virtual gamepad through `/dev/uinput`.
 To BeamNG.drive on Linux it looks like an ordinary controller — no Bluetooth, drivers or kernel modules.
 
-| Control screen | Settings |
-|---|---|
-| ![Control screen](docs/screenshots/control-screen.png) | ![Settings](docs/screenshots/settings-screen.png) |
+Steering works either with a **finger on an on-screen wheel** or with the **phone's tilt sensors**.
+
+| Control — wheel mode | Settings |
+|:---:|:---:|
+| ![Control screen, wheel mode](docs/screenshots/control-wheel.png) | ![Settings](docs/screenshots/settings.png) |
+| ![Control screen, tilt mode](docs/screenshots/control-tilt.png) | ![Settings, pedal options](docs/screenshots/settings-pedals.png) |
 
 ## How it works
 
@@ -43,13 +46,40 @@ If the PC stops receiving packets, the daemon zeroes all axes after 0.3 s.
 
 ## Control screen
 
+### Wheel mode
+
 - **Steering wheel** — rotates with a finger along the rim, limited by the "lock to lock" setting.
-- **Pedals** — vertical `BRAKE` and `GAS` strips; pressure depends on the touch point, with smooth press and release ramps.
+- **Pedals** — vertical `BRAKE` and `GAS` strips on the right; pressure depends on the touch point,
+  with smooth press and release ramps.
 - **Gear pad** — swipe up (`+`) and down (`−`), left (`N`) for neutral, right (`*`) reserved.
 - **`H`** — handbrake.
 - **⚙** — opens settings.
 
-Command buttons are disabled until a connection is established.
+### Tilt mode
+
+The phone itself becomes the wheel; the layout is mirrored so both hands hold the device in landscape.
+
+- **`BRAKE`** strip on the left edge and **`GAS`** strip on the right edge, plus a gear pad on each side.
+- **⌖** — re-centres the wheel at the current phone position.
+- **Steering indicator** — thin bar along the bottom edge showing the current steering axis.
+- **⚙** — opens settings.
+
+Tilt mode needs an accelerometer. If the device has none, the mode is disabled in settings and the app
+stays in wheel mode.
+
+### How tilt steering works
+
+The roll angle comes from two sensors with different roles:
+
+- The **gyroscope** integrates rotation with no lag, so it drives the wheel while the phone is turning.
+  Its zero-offset is estimated while the phone rests and subtracted before integration, which stops the
+  wheel from creeping.
+- The **accelerometer** provides an absolute reference from gravity and never drifts, but the gravity
+  vector is distorted as soon as the phone moves. It is therefore only used as an anchor at rest.
+
+When the phone lies **flat**, gravity points along the screen normal and roll cannot be measured from it,
+so the accelerometer is ignored and the wheel is driven by rotating the phone around the vertical axis.
+The accelerometer is re-weighted smoothly when the phone is tilted again, so the wheel does not jump.
 
 ## Settings
 
@@ -58,9 +88,13 @@ Command buttons are disabled until a connection is established.
 | PC IP address | — | the computer's address on the local network |
 | UDP port | `5555` | control stream port |
 | Command port | `5556` | one-shot command port |
-| Lock to lock angle | `960°` | options: 960, 720, 360, 305, 270 |
+| Control mode | Wheel | `Wheel` (finger) or `Tilt` (sensors) |
+| Lock to lock angle | `960°` | wheel mode, options: 960, 720, 360, 305, 270 |
+| Tilt sensitivity | `100%` | tilt mode, `50 … 100%` |
 | Pedal press, ms | `100` | press ramp |
 | Pedal release, ms | `300` | release ramp |
+| Axis width | `9%` | pedal strip width, `5 … 18%` of screen width |
+| Pedal length | `100%` | pedal strip height, `35 … 100%` of screen height |
 | Invert brake axis by 180° | off | brake axis inversion |
 
 The status card shows whether streaming is active, which address it targets and how many packets were sent.
