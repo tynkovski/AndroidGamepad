@@ -7,10 +7,11 @@ To BeamNG.drive on Linux it looks like an ordinary controller — no Bluetooth, 
 
 Steering works either with a **finger on an on-screen wheel** or with the **phone's tilt sensors**.
 
-| Control — wheel mode | Settings |
+Two layouts are available — pick one in settings:
+
+| Wheel mode — steer with a finger | Tilt mode — steer by turning the phone |
 |:---:|:---:|
-| ![Control screen, wheel mode](docs/screenshots/control-wheel.png) | ![Settings](docs/screenshots/settings.png) |
-| ![Control screen, tilt mode](docs/screenshots/control-tilt.png) | ![Settings, pedal options](docs/screenshots/settings-pedals.png) |
+| ![Control screen, wheel mode](docs/screenshots/control-wheel.png) | ![Control screen, tilt mode](docs/screenshots/control-tilt.png) |
 
 ## How it works
 
@@ -48,6 +49,8 @@ If the PC stops receiving packets, the daemon zeroes all axes after 0.3 s.
 
 ### Wheel mode
 
+![Control screen, wheel mode](docs/screenshots/control-wheel.png)
+
 - **Steering wheel** — rotates with a finger along the rim, limited by the "lock to lock" setting.
 - **Pedals** — vertical `BRAKE` and `GAS` strips on the right; pressure depends on the touch point,
   with smooth press and release ramps.
@@ -58,6 +61,8 @@ If the PC stops receiving packets, the daemon zeroes all axes after 0.3 s.
 ### Tilt mode
 
 The phone itself becomes the wheel; the layout is mirrored so both hands hold the device in landscape.
+
+![Control screen, tilt mode](docs/screenshots/control-tilt.png)
 
 - **`BRAKE`** strip on the left edge and **`GAS`** strip on the right edge, plus a gear pad on each side.
 - **⌖** — re-centres the wheel at the current phone position.
@@ -82,6 +87,10 @@ so the accelerometer is ignored and the wheel is driven by rotating the phone ar
 The accelerometer is re-weighted smoothly when the phone is tilted again, so the wheel does not jump.
 
 ## Settings
+
+| Connection and mode | Pedals and axis |
+|:---:|:---:|
+| ![Settings](docs/screenshots/settings.png) | ![Settings, pedal options](docs/screenshots/settings-pedals.png) |
 
 | Parameter | Default | Description |
 |---|---|---|
