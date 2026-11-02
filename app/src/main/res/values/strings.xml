@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MyJoystick</string>
+    <string name="app_name">My Joystick</string>
 
     <!-- Control screen -->
     <string name="control_settings">Настройки</string>
