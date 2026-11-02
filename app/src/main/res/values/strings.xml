@@ -7,6 +7,7 @@
     <string name="pedal_gas">GAS</string>
     <string name="pedal_brake">BRAKE</string>
     <string name="control_mode_tilt_recenter">Центрировать</string>
+    <string name="control_mode_tilt_recenter_symbol" translatable="false">⌖</string>
     <string name="steering_state">Руль %1$d%%</string>
 
     <!-- One-shot command buttons -->
