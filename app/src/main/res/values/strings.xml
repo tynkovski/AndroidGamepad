@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyJoystick</string>
+
+    <!-- Control screen -->
+    <string name="control_settings">Настройки</string>
+    <string name="pedal_gas">GAS</string>
+    <string name="pedal_brake">BRAKE</string>
+
+    <!-- One-shot command buttons -->
+    <string name="event_shift_up_symbol" translatable="false">↑</string>
+    <string name="event_shift_down_symbol" translatable="false">↓</string>
+    <string name="event_neutral_symbol" translatable="false">N</string>
+    <string name="event_handbrake_symbol" translatable="false">H</string>
+    <string name="event_shift_up">Повысить передачу</string>
+    <string name="event_shift_down">Понизить передачу</string>
+    <string name="event_neutral">Нейтраль</string>
+    <string name="event_handbrake">Ручной тормоз</string>
+
+    <!-- Gear pad -->
+    <string name="gear_pad_up_symbol" translatable="false">+</string>
+    <string name="gear_pad_down_symbol" translatable="false">−</string>
+    <string name="gear_pad_reserved_symbol" translatable="false">*</string>
+    <string name="gear_pad_description">Переключение передач: свайп вверх — выше, вниз — ниже, влево — нейтраль, вправо — зарезервировано</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_back">Назад</string>
+    <string name="settings_save">Сохранить</string>
+    <string name="settings_section_connection">Соединение</string>
+    <string name="settings_ip_label">IP-адрес ПК</string>
+    <string name="settings_port_label">UDP-порт</string>
+    <string name="settings_event_port_label">Порт команд</string>
+    <string name="settings_connect">Подключить</string>
+    <string name="settings_disconnect">Отключить</string>
+    <string name="settings_packets">Пакетов отправлено</string>
+    <string name="settings_section_wheel">Руль</string>
+    <string name="settings_lock_to_lock">Угол поворота руля (от упора до упора)</string>
+    <string name="settings_lock_to_lock_degrees">%1$d°</string>
+    <string name="settings_section_pedals">Педали</string>
+    <string name="settings_press_ramp">Нажатие, мс</string>
+    <string name="settings_release_ramp">Отпускание, мс</string>
+    <string name="settings_brake_axis_inverted">Развернуть ось тормоза на 180°</string>
+
+    <!-- Connection status -->
+    <string name="status_disconnected">Отключено</string>
+    <string name="status_streaming">Отправка на %1$s</string>
+
+    <!-- Foreground service notification -->
+    <string name="channel_name">Поток управления</string>
+    <string name="channel_description">Передача осей управления на ПК</string>
+    <string name="notification_waiting">Ожидание настроек…</string>
+    <string name="notification_stop">Остановить</string>
+
+    <!-- Errors -->
+    <string name="error_no_ip">Укажите IP-адрес ПК</string>
+    <string name="error_send_failed">Ошибка отправки UDP</string>
+    <string name="error_local_network">Нет доступа к локальной сети. Разрешите «Устройства рядом» в настройках приложения.</string>
+</resources>
