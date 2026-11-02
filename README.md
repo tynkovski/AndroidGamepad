@@ -7,10 +7,9 @@ To BeamNG.drive on Linux it looks like an ordinary controller — no Bluetooth, 
 
 Steering works either with a **finger on an on-screen wheel** or with the **phone's tilt sensors**.
 
-| Control — wheel mode | Settings |
+| Wheel mode | Tilt mode |
 |:---:|:---:|
-| ![Control screen, wheel mode](docs/screenshots/control-wheel.png) | ![Settings](docs/screenshots/settings.png) |
-| ![Control screen, tilt mode](docs/screenshots/control-tilt.png) | ![Settings, pedal options](docs/screenshots/settings-pedals.png) |
+| ![Control screen, wheel mode](docs/screenshots/control-wheel.png) | ![Control screen, tilt mode](docs/screenshots/control-tilt.png) |
 
 ## How it works
 
@@ -83,6 +82,10 @@ The accelerometer is re-weighted smoothly when the phone is tilted again, so the
 
 ## Settings
 
+### Connection and mode
+
+![Settings, connection and mode](docs/screenshots/settings.png)
+
 | Parameter | Default | Description |
 |---|---|---|
 | PC IP address | — | the computer's address on the local network |
@@ -91,14 +94,21 @@ The accelerometer is re-weighted smoothly when the phone is tilted again, so the
 | Control mode | Wheel | `Wheel` (finger) or `Tilt` (sensors) |
 | Lock to lock angle | `960°` | wheel mode, options: 960, 720, 360, 305, 270 |
 | Tilt sensitivity | `100%` | tilt mode, `50 … 100%` |
+
+The status card shows whether streaming is active, which address it targets and how many packets were sent.
+If the port or address is invalid, default values are substituted.
+
+### Pedals and axis
+
+![Settings, pedals and axis](docs/screenshots/settings-pedals.png)
+
+| Parameter | Default | Description |
+|---|---|---|
 | Pedal press, ms | `100` | press ramp |
 | Pedal release, ms | `300` | release ramp |
 | Axis width | `9%` | pedal strip width, `5 … 18%` of screen width |
 | Pedal length | `100%` | pedal strip height, `35 … 100%` of screen height |
 | Invert brake axis by 180° | off | brake axis inversion |
-
-The status card shows whether streaming is active, which address it targets and how many packets were sent.
-If the port or address is invalid, default values are substituted.
 
 ## Build and run
 
