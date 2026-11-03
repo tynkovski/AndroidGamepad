@@ -1,4 +1,4 @@
-# MyJoystick
+# AndroidGamepad
 
 Turns an Android phone into a wireless game controller: steering wheel, pedals, gear shifting and handbrake.
 The phone streams axis state over UDP to a PC at 100 Hz, where it is received by a
